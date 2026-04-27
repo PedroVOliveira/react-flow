@@ -1,6 +1,7 @@
 'use client'
 import { useState, useCallback } from 'react'
-import { ReactFlow, Background, Controls, applyEdgeChanges, applyNodeChanges, addEdge, Node, Edge, OnNodesChange, OnEdgesChange, OnConnect } from '@xyflow/react'
+import { applyEdgeChanges, applyNodeChanges, addEdge, Node, Edge, OnNodesChange, OnEdgesChange, OnConnect } from '@xyflow/react'
+import FlowComponent from '@/components/react-flow'
 
 const initialNodes: Node[] = [
   { id: 'n1', position: { x: 0, y: 50 }, data: { label: 'Node 1' } },
@@ -29,16 +30,13 @@ export default function Home() {
 
   return (
     <div className="w-full h-screen flex flex-col justify-center items-center">
-      <ReactFlow
+      <FlowComponent
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-      >
-        <Background />
-        <Controls />
-      </ReactFlow>
+      />
     </div>
   );
 }
