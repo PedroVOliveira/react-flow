@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "playwright install chromium --with-deps && playwright test && next build",
     "start": "next start",
     "lint": "eslint",
     "e2e": "playwright test"
