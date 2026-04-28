@@ -18,8 +18,8 @@ export function useFlowState<TData extends { label: string; isNew?: boolean }>(
   const [nodes, setNodes] = useState<Node<TData>[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges)
 
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges<Node<TData>>(changes as any, nds)),
+  const onNodesChange: OnNodesChange<Node<TData>> = useCallback(
+    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
     []
   );
 
