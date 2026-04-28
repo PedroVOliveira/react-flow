@@ -8,13 +8,13 @@ const createJestConfig = nextJest({
 const config: Config = {
   coverageProvider: 'v8',
   testEnvironment: 'jsdom',
-  testEnvironmentOptions: {
-    customExportConditions: [''],
-  },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(@xyflow)/)',
+  ],
 }
 
 export default createJestConfig(config)
