@@ -9,10 +9,12 @@ import {
   Background, 
   Controls, 
   Panel, 
-  ReactFlowProvider 
+  ReactFlowProvider,
+  ConnectionMode
 } from '@xyflow/react'
 import { ReactNode } from 'react'
 import { FlowNode, CustomNodeData } from './node'
+import { useFlowState } from './use-flow-state'
 
 const nodeTypes = {
   custom: FlowNode,
@@ -37,6 +39,7 @@ const FlowCanvas = ({ nodes, edges, onNodesChange, onEdgesChange, onConnect, chi
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        connectionMode={ConnectionMode.Loose}
         fitView
       >
         {children}
@@ -51,4 +54,5 @@ export const Flow = {
   Background,
   Controls,
   Panel,
+  useFlowState,
 };
