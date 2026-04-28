@@ -1,18 +1,29 @@
 'use client'
-import { ReactFlow, Background, Controls, Panel, ReactFlowProvider } from '@xyflow/react'
+import { 
+  Node, 
+  Edge, 
+  OnNodesChange, 
+  OnEdgesChange, 
+  OnConnect, 
+  ReactFlow, 
+  Background, 
+  Controls, 
+  Panel, 
+  ReactFlowProvider 
+} from '@xyflow/react'
 import { ReactNode } from 'react'
-import { FlowNode } from './node'
+import { FlowNode, CustomNodeData } from './node'
 
 const nodeTypes = {
   custom: FlowNode,
 };
 
 type FlowCanvasProps = {
-  nodes: any[];
-  edges: any[];
-  onNodesChange: any;
-  onEdgesChange: any;
-  onConnect: any;
+  nodes: Node<CustomNodeData>[];
+  edges: Edge[];
+  onNodesChange: OnNodesChange;
+  onEdgesChange: OnEdgesChange;
+  onConnect: OnConnect;
   children?: ReactNode;
 };
 
