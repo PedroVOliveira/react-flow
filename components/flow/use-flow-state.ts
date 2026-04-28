@@ -52,10 +52,7 @@ export function useFlowState<TData extends { label: string; isNew?: boolean }>(
       id,
       type: 'custom',
       position,
-      data: { 
-        label: '', 
-        isNew: true,
-      } as TData,
+      data: { label: '', isNew: true } as TData,
     };
     setNodes((nds) => [...nds, newNode]);
     return id;
@@ -63,40 +60,25 @@ export function useFlowState<TData extends { label: string; isNew?: boolean }>(
 
   const autoSpawn = useCallback((sourceId: string, direction: 'top' | 'bottom' | 'left' | 'right') => {
     const sourceNode = nodes.find((n) => n.id === sourceId);
-    if (!sourceNode) return;
+    if (!sourceNode) return null;
 
     const spacing = 250;
-    const existingEdgesCount = edges.filter(
-      (e) => e.source === sourceId && e.sourceHandle === direction
-    ).length;
+    const xLane = nodes.filter(n => Math.abs(n.position.y - sourceNode.position.y) < 100).map(n => n.position.x);
+    const yLane = nodes.filter(n => Math.abs(n.position.x - sourceNode.position.x) < 100).map(n => n.position.y);
 
-    const offsetMultiplier = Math.ceil(existingEdgesCount / 2);
-    const offsetDirection = existingEdgesCount % 2 === 0 ? 1 : -1;
-    const offsetValue = offsetMultiplier * 200 * offsetDirection;
-
-    const positionMap = {
-      top: { x: sourceNode.position.x + offsetValue, y: sourceNode.position.y - spacing },
-      bottom: { x: sourceNode.position.x + offsetValue, y: sourceNode.position.y + spacing },
-      left: { x: sourceNode.position.x - spacing, y: sourceNode.position.y + offsetValue },
-      right: { x: sourceNode.position.x + spacing, y: sourceNode.position.y + offsetValue },
-    };
+    const spawnConfig = {
+      top:    { x: sourceNode.position.x, y: Math.min(...yLane, sourceNode.position.y) - spacing, targetHandle: 'bottom' },
+      bottom: { x: sourceNode.position.x, y: Math.max(...yLane, sourceNode.position.y) + spacing, targetHandle: 'top' },
+      left:   { x: Math.min(...xLane, sourceNode.position.x) - spacing, y: sourceNode.position.y, targetHandle: 'right' },
+      right:  { x: Math.max(...xLane, sourceNode.position.x) + spacing, y: sourceNode.position.y, targetHandle: 'left' },
+    }[direction];
 
     const newNodeId = `node-${Date.now()}`;
     const newNode: Node<TData> = {
       id: newNodeId,
       type: 'custom',
-      position: positionMap[direction],
-      data: { 
-        label: '', 
-        isNew: true,
-      } as TData,
-    };
-
-    const targetHandleMap = {
-      top: 'bottom',
-      bottom: 'top',
-      left: 'right',
-      right: 'left',
+      position: { x: spawnConfig.x, y: spawnConfig.y },
+      data: { label: '', isNew: true } as TData,
     };
 
     const newEdge: Edge = {
@@ -104,18 +86,18 @@ export function useFlowState<TData extends { label: string; isNew?: boolean }>(
       source: sourceId,
       target: newNodeId,
       sourceHandle: direction,
-      targetHandle: targetHandleMap[direction],
+      targetHandle: spawnConfig.targetHandle,
     };
 
     setNodes((nds) => [...nds, newNode]);
     setEdges((eds) => [...eds, newEdge]);
-  }, [nodes, edges]);
+    
+    return newNodeId;
+  }, [nodes]);
 
   return {
     nodes,
-    setNodes,
     edges,
-    setEdges,
     onNodesChange,
     onEdgesChange,
     onConnect,

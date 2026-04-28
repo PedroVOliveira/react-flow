@@ -1,9 +1,10 @@
 'use client'
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
+import { useReactFlow } from '@xyflow/react'
 import { Flow } from '@/components/flow'
 import { CustomNodeData } from '@/components/flow/node'
 
-export default function Home() {
+function FlowContainer() {
   const {
     nodes,
     edges,
@@ -16,6 +17,26 @@ export default function Home() {
     autoSpawn,
   } = Flow.useFlowState<CustomNodeData>();
 
+  const { fitView } = useReactFlow();
+
+  // Função auxiliar para adicionar e focar
+  const handleAddNode = useCallback(() => {
+    const id = addNode();
+    window.requestAnimationFrame(() => {
+      fitView({ nodes: [{ id }], duration: 800, padding: 0.2 });
+    });
+  }, [addNode, fitView]);
+
+  // Função auxiliar para ramificar e focar
+  const handleAutoSpawn = useCallback((sourceId: string, direction: 'top' | 'bottom' | 'left' | 'right') => {
+    const id = autoSpawn(sourceId, direction);
+    if (id) {
+      window.requestAnimationFrame(() => {
+        fitView({ nodes: [{ id }], duration: 800, padding: 0.2 });
+      });
+    }
+  }, [autoSpawn, fitView]);
+
   const enrichedNodes = useMemo(() => 
     nodes.map(n => ({
       ...n,
@@ -23,36 +44,39 @@ export default function Home() {
         ...n.data,
         onEdit: editNode,
         onDelete: deleteNode,
-        onAutoSpawn: autoSpawn
+        onAutoSpawn: handleAutoSpawn // Usando a versão com fitView
       }
     })), 
-  [nodes, editNode, deleteNode, autoSpawn]);
+  [nodes, editNode, deleteNode, handleAutoSpawn]);
 
   return (
+    <Flow.Canvas
+      nodes={enrichedNodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+    >
+      <Flow.Background />
+      <Flow.Controls />
+      <Flow.Panel position="bottom-right" className="m-4">
+        <button
+          data-testid="add-node-btn"
+          onClick={handleAddNode}
+          className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-semibold text-sm shadow-lg rounded-full cursor-pointer hover:bg-blue-700 hover:-translate-y-0.5 active:translate-y-0 transition-all"
+        >
+          <span className="text-lg">+</span>
+          Adicionar Novo Nó
+        </button>
+      </Flow.Panel>
+    </Flow.Canvas>
+  );
+}
+
+export default function Home() {
+  return (
     <Flow.Root>
-      <Flow.Canvas
-        nodes={enrichedNodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-      >
-        <Flow.Background />
-        <Flow.Controls />
-        <Flow.Panel position="bottom-right" className="m-4">
-          <button
-            data-testid="add-node-btn"
-            onClick={() => addNode()}
-            className="flex items-center gap-2 px-4 py-2 bg-white text-gray-800 font-semibold text-sm shadow-md border border-gray-200 rounded cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            Adicionar
-          </button>
-        </Flow.Panel>
-      </Flow.Canvas>
+      <FlowContainer />
     </Flow.Root>
   );
 }
