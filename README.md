@@ -1,36 +1,154 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⚡ React Flow Canvas Editor
 
-## Getting Started
+Editor de canvas baseado em nós, construído com [React Flow](https://reactflow.dev/), projetado como um motor reutilizável e composável para fluxos de trabalho com diagramas e quadros interativos.
 
-First, run the development server:
+> Demo ao vivo: [react-flow-pedrovo.vercel.app](https://react-flow-pedrovo.vercel.app) *(atualize com a sua URL)*
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## ✨ Funcionalidades
+
+- **Auto-Spawn estilo Miro** — Passe o mouse sobre um nó para exibir os botões `+` direcionais. Clique para criar instantaneamente um nó conectado naquela direção.
+- **Espaçamento Inteligente** — Múltiplos nós criados pelo mesmo lado são distribuídos automaticamente para evitar sobreposição.
+- **Edição Inline** — Clique duplo ou use a barra de ferramentas para editar os rótulos dos nós diretamente no canvas.
+- **Operações CRUD** — Crie, edite e exclua nós com suporte completo a teclado (`Enter` para salvar, `Esc` para cancelar).
+- **Composition Pattern** — Construído com componentes compostos e um hook customizado, facilitando o reuso em qualquer contexto.
+
+---
+
+## 🏗️ Arquitetura
+
+O projeto segue estritamente o **Composition Pattern**, separando responsabilidades em módulos pequenos e focados.
+
+```
+components/flow/
+├── index.tsx              # Namespace Flow (Root, Canvas, useFlowState)
+├── use-flow-state.ts      # Hook principal: lógica de CRUD + Auto-Spawn
+├── inline-edit.tsx        # Componente composto para edição inline
+└── node/
+    ├── index.tsx          # Orquestrador do FlowNode
+    ├── context.tsx        # NodeContext compartilhado entre sub-componentes
+    ├── toolbar.tsx        # Ações de editar / excluir
+    ├── quick-actions.tsx  # Botões de spawn direcionais
+    ├── ghost-preview.tsx  # Prévia visual ao passar o mouse
+    └── content.tsx        # Wrapper do InlineEdit
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Como o namespace `Flow` é consumido
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```tsx
+// app/page.tsx
+const { nodes, edges, onNodesChange, addNode, editNode, deleteNode, autoSpawn } =
+  Flow.useFlowState<CustomNodeData>();
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+return (
+  <Flow.Root>
+    <Flow.Canvas nodes={enrichedNodes} edges={edges} ...>
+      <Flow.Background />
+      <Flow.Controls />
+    </Flow.Canvas>
+  </Flow.Root>
+);
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🚀 Como Rodar
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Pré-requisitos
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Node.js `>= 18`
+- pnpm `>= 10`
 
-## Deploy on Vercel
+### Instalação
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm install
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Desenvolvimento
+
+```bash
+pnpm dev
+```
+
+Abra [http://localhost:3000](http://localhost:3000) no seu navegador.
+
+---
+
+## 🧪 Testes
+
+Os testes são isolados por operação e seguem a convenção `data-testid` para seletores resilientes.
+
+```bash
+# Rodar uma vez
+pnpm test
+
+# Modo watch
+pnpm test:watch
+```
+
+| Teste | Descrição |
+|---|---|
+| Deve criar um novo nó | Valida que o botão Adicionar cria um nó em modo de edição |
+| Deve atualizar o rótulo | Valida que a edição inline salva o rótulo corretamente |
+| Deve remover o nó | Valida que o botão de excluir na toolbar remove o nó |
+| Deve criar nó conectado | Valida que o Auto-Spawn cria um segundo nó linkado |
+
+---
+
+## 🔍 Verificação de Tipos
+
+```bash
+pnpm typecheck
+```
+
+---
+
+## 🛠️ Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Engine de Canvas | @xyflow/react v12 |
+| Estilização | Tailwind CSS v4 |
+| Testes | Jest + @testing-library/react v16 |
+| Linguagem | TypeScript 5 |
+| Gerenciador de Pacotes | pnpm |
+
+---
+
+## 📐 Decisões de Design
+
+### `useFlowState` como fonte única da verdade
+Toda a lógica de negócio (CRUD, Auto-Spawn, cálculo de posição) vive dentro do `useFlowState`. As páginas são puramente declarativas — apenas consomem o hook e renderizam.
+
+### Object Literals no lugar de if/else
+A lógica direcional (mapeamento de posição e de handles) utiliza lookups em objetos ao invés de cadeias condicionais, tornando o código mais fácil de estender.
+
+### Convenção `data-testid`
+Todos os elementos interativos possuem um atributo `data-testid`. Os testes nunca dependem de conteúdo textual ou seletores CSS, o que os torna resilientes a mudanças de design e internacionalização.
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+.
+├── app/
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   └── flow/           # Motor do canvas (reutilizável)
+├── __tests__/
+│   └── crud-node.test.tsx
+├── jest.config.ts
+├── jest.setup.ts
+└── package.json
+```
+
+---
+
+## 📄 Licença
+
+MIT
