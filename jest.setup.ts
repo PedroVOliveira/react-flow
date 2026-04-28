@@ -1,30 +1,25 @@
 import '@testing-library/jest-dom'
 import * as React from 'react'
 
-// React 19 compatibility shim for Testing Library
-if (typeof React.act === 'undefined') {
-  // @ts-ignore
-  React.act = (cb: any) => cb();
+declare global {
+  var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 
-// @ts-ignore
 global.IS_REACT_ACT_ENVIRONMENT = true;
 
-// To make sure that the tests are working, it's important that you are using 
-// this implementation of ResizeObserver and DOMMatrixReadOnly 
+if (typeof (React as any).act === 'undefined') {
+  (React as any).act = (cb: () => void) => cb();
+}
+
 class ResizeObserver {
   callback: globalThis.ResizeObserverCallback;
-
   constructor(callback: globalThis.ResizeObserverCallback) {
     this.callback = callback;
   }
-
   observe(target: Element) {
     this.callback([{ target } as globalThis.ResizeObserverEntry], this);
   }
-
   unobserve() {}
-
   disconnect() {}
 }
 
@@ -36,7 +31,6 @@ class DOMMatrixReadOnly {
   }
 }
 
-// Only run the shim once when requested
 let init = false;
 
 export const mockReactFlow = () => {
@@ -44,28 +38,16 @@ export const mockReactFlow = () => {
   init = true;
 
   global.ResizeObserver = ResizeObserver;
-
   // @ts-ignore
   global.DOMMatrixReadOnly = DOMMatrixReadOnly;
 
   Object.defineProperties(global.HTMLElement.prototype, {
-    offsetHeight: {
-      get() {
-        return parseFloat(this.style.height) || 1;
-      },
-    },
-    offsetWidth: {
-      get() {
-        return parseFloat(this.style.width) || 1;
-      },
-    },
+    offsetHeight: { get() { return parseFloat(this.style.height) || 1; } },
+    offsetWidth: { get() { return parseFloat(this.style.width) || 1; } },
   });
 
   (global.SVGElement as any).prototype.getBBox = () => ({
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
+    x: 0, y: 0, width: 0, height: 0,
   });
 };
 
