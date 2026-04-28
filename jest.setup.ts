@@ -1,16 +1,6 @@
 import '@testing-library/jest-dom'
 import * as React from 'react'
 
-declare global {
-  var IS_REACT_ACT_ENVIRONMENT: boolean;
-}
-
-global.IS_REACT_ACT_ENVIRONMENT = true;
-
-if (typeof (React as any).act === 'undefined') {
-  (React as any).act = (cb: () => void) => cb();
-}
-
 class ResizeObserver {
   callback: globalThis.ResizeObserverCallback;
   constructor(callback: globalThis.ResizeObserverCallback) {
