@@ -23,7 +23,7 @@ const nodeTypes = {
 type FlowCanvasProps = {
   nodes: Node<CustomNodeData>[];
   edges: Edge[];
-  onNodesChange: OnNodesChange;
+  onNodesChange: OnNodesChange<Node<CustomNodeData>>;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
   children?: ReactNode;
