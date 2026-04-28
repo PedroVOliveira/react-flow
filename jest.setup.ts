@@ -1,4 +1,14 @@
 import '@testing-library/jest-dom'
+import * as React from 'react'
+
+// React 19 compatibility shim for Testing Library
+if (typeof React.act === 'undefined') {
+  // @ts-ignore
+  React.act = (cb: any) => cb();
+}
+
+// @ts-ignore
+global.IS_REACT_ACT_ENVIRONMENT = true;
 
 // To make sure that the tests are working, it's important that you are using 
 // this implementation of ResizeObserver and DOMMatrixReadOnly 
